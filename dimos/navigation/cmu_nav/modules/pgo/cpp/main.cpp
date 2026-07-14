@@ -1,6 +1,7 @@
 // PGO NativeModule — faithful port of pgo_node.cpp from ROS2 to LCM.
 // Subscribes to registered_scan + odometry, runs SimplePGO (iSAM2 + PCL ICP),
 // publishes corrected_odometry, global_map, and TF correction offset.
+// ci rebuild probe 2026-07-14 — harmless comment to test native rebuild path; safe to delete.
 
 #include <atomic>
 #include <chrono>
