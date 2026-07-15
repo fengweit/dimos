@@ -14,7 +14,65 @@
 
 """Exact scoring for typed spatiotemporal predictions."""
 
-from dimos.benchmark.spatiotemporal.models import OracleAnswer, Prediction, Question, QuestionResult
+from collections.abc import Mapping
+from dataclasses import dataclass
+
+from dimos.benchmark.spatiotemporal.models import (
+    IntervalId,
+    OracleAnswer,
+    Prediction,
+    PredictionStatus,
+    Question,
+    QuestionId,
+    QuestionKind,
+    QuestionResult,
+    SpatialPredicate,
+    TemporalPredicate,
+)
+
+QuestionPredicate = SpatialPredicate | TemporalPredicate
+
+
+@dataclass(frozen=True, slots=True)
+class ScoreSummary:
+    """Aggregate exact-match counts for one report slice."""
+
+    total: int
+    correct: int
+    accuracy: float
+
+
+@dataclass(frozen=True, slots=True)
+class QuestionDiagnostic:
+    """Evidence-linked diagnostic information for one public question."""
+
+    question_id: QuestionId
+    status: PredictionStatus
+    question_kind: QuestionKind
+    predicate: QuestionPredicate
+    expected: bool
+    predicted: bool | None
+    evidence_frame_ids: tuple[int, ...]
+    evidence_interval_ids: tuple[IntervalId, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class EvaluationReport:
+    """Aggregate candidate scores linked to source identity and teacher evidence."""
+
+    source_video_sha256: str
+    overall: ScoreSummary
+    status_counts: Mapping[PredictionStatus, int]
+    by_family: Mapping[QuestionKind, ScoreSummary]
+    by_predicate: Mapping[QuestionPredicate, ScoreSummary]
+    diagnostics: tuple[QuestionDiagnostic, ...]
+
+
+def summarize_statuses(statuses: tuple[PredictionStatus, ...]) -> ScoreSummary:
+    """Summarize exact candidate statuses, counting all outcomes in the denominator."""
+    total = len(statuses)
+    correct = statuses.count(PredictionStatus.CORRECT)
+    return ScoreSummary(total=total, correct=correct, accuracy=correct / total if total else 0.0)
 
 
 def score_prediction(
