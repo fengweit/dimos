@@ -1,6 +1,6 @@
 # Lane D — Replay Progress
 
-AUTOMATION_STATUS: READY
+AUTOMATION_STATUS: BLOCKED_INTERFACE
 CURRENT_STEP: D2
 LAST_COMPLETED_STEP: D1
 BRANCH: feat/stqa-replay
@@ -10,7 +10,7 @@ REMOTE: fork
 | Step | State |
 |---|---|
 | D1 | COMPLETE |
-| D2 | PENDING |
+| D2 | BLOCKED_INTERFACE |
 
 ## Append-only entries
 
