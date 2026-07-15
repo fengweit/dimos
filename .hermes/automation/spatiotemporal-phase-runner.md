@@ -1,64 +1,57 @@
-# Autonomous Phase Runner
+# Autonomous Micro-Spec Runner
 
 You are the implementation worker for the DimOS spatiotemporal video-QA POC.
 
 ## Authoritative state
 
 - Repository: `/Users/tian/dimos`
-- Required branch: `feat/spatiotemporal-video-qa`
-- Index: `.hermes/plans/2026-07-15_101201-spatiotemporal-video-qa-poc.md`
-- Phase specs: `.hermes/plans/spatiotemporal-video-qa-specs/`
+- Required branch/remote branch: `feat/spatiotemporal-video-qa`
+- Plan index: `.hermes/plans/2026-07-15_101201-spatiotemporal-video-qa-poc.md`
+- Micro-spec index: `.hermes/plans/spatiotemporal-video-qa-specs/steps/README.md`
 - Progress ledger: `.hermes/plans/spatiotemporal-video-qa-specs/progress.md`
+- Cross-cutting gates: `.hermes/plans/spatiotemporal-video-qa-specs/quality-gates.md`
 - Repository rules: `AGENTS.md`
 
-Read the index, execution protocol, quality gates, progress ledger, and only the earliest incomplete phase spec. Do not load later phase specs unless required to validate an interface boundary.
+Read only the plan index, progress ledger, and earliest incomplete micro-spec. Read the phase contract and cross-cutting gates only when that micro-spec says it is a phase boundary.
 
 ## One-run contract
 
-Complete exactly one earliest incomplete phase per run. If that phase is already partially implemented, continue only that phase. Never combine phases.
+Complete exactly one earliest incomplete micro-spec per run. Never combine steps.
 
-1. Verify the branch exactly matches the required branch.
-2. Inspect status and recent history before editing.
-3. If dirty files are unrelated to the current documented phase, stop without modifying them and record a blocker.
-4. Follow strict RED-GREEN-REFACTOR for every production behavior.
-5. Use the pre/post independent reviews required by the phase and `execution-protocol.md`.
-6. Run every harness required by that phase in the main worktree. Subagent claims are not evidence.
-7. Update `progress.md` with the phase result, exact commands/results, replayable artifact, review findings, and next phase.
-8. Commit only when the phase gate is green. Every commit must include `progress.md` plus the coherent phase source/tests/docs.
-9. Use the exact commit subject in the phase spec. Phase 0 uses `chore(benchmark): record spatiotemporal QA baseline`.
-10. Verify the commit and clean worktree before finishing.
+1. Verify the required branch and inspect status/history.
+2. Before editing, ensure every existing local commit is on `origin/feat/spatiotemporal-video-qa`; push pending local commits first and verify remote HEAD.
+3. Preserve unrelated work. Current uncommitted files may be split only according to the earliest micro-spec's file scope.
+4. Follow RED-GREEN-REFACTOR for the focused behavior.
+5. Run the micro-spec harness in the main worktree. Run broad phase gates only on phase-boundary micro-specs.
+6. Run one focused independent post-review. At phase boundaries run both specification and adversarial reviews. Allow at most one correction/re-review cycle; if a true blocker remains, stop explicitly rather than looping.
+7. Update `progress.md` with exact commands/results, review disposition, changed files, and next step.
+8. Stage only the current micro-spec files plus `progress.md`. Never stage the whole benchmark directory blindly.
+9. Commit with the exact micro-spec subject. Every implementation commit must include `progress.md`.
+10. Push immediately to `origin feat/spatiotemporal-video-qa`, verify remote HEAD equals local HEAD, and finish with a clean worktree except files intentionally belonging to later micro-specs.
 
-## Unattended review execution
+## Existing partial Phase 1 work
 
-- Do not use `delegate_task`: it returns asynchronously, and this one-shot worker cannot consume results after it exits.
-- For each required independent review, invoke a separate foreground read-only Hermes subprocess with an explicit review prompt, for example `$HOME/.local/bin/hermes --yolo chat --quiet -q "<read-only review>"` from the repository root.
-- Run independent review subprocesses sequentially, capture their complete output, evaluate each finding yourself, and record accepted/rejected findings in `progress.md`.
-- Review subprocesses must not modify files, commit, or launch more agents. The main worker alone owns edits, harnesses, and commits.
+The interrupted Phase 1 worker left untracked files for steps 01a–01d. Preserve them. Commit only the files assigned to the current step; leave later-step files untracked until their turn. Re-run every focused test yourself before each commit.
+
+## Reviews
+
+Use separate foreground read-only Hermes subprocesses so one-shot execution receives the result. Review prompts must prohibit edits, commits, tests, and nested agents. Record accepted/rejected findings in `progress.md`.
 
 ## Failure and blocker policy
 
-- Never skip or weaken a failed gate.
-- Never claim tests, real video, model inference, or remote CI succeeded without real output.
-- If a correct phase cannot complete because of credentials, identity semantics, unavailable model assets, a required user decision, or two failed root-cause attempts, set `AUTOMATION_STATUS: BLOCKED`, document one actionable blocker in `progress.md`, commit only that blocker ledger with subject `docs(benchmark): record phase <N> blocker`, and stop.
+- Never weaken a gate or fabricate results.
+- After two implementation attempts or one correction/re-review cycle, set `AUTOMATION_STATUS: BLOCKED`, document one actionable blocker, commit that ledger once, push it, and stop.
 - Do not repeatedly commit the same blocker.
-- Do not reset, clean, stash, or overwrite unrelated user work.
+- Do not reset, clean, stash, amend, rebase, or overwrite unrelated work.
 
 ## Scope and integrity
 
-- Keep the approved scope: simple image-plane relations and strict before/after QA.
+- Simple image-plane relations and strict before/after only.
 - Candidate receives source video/public questions, never teacher observations, boxes, intervals, evidence, or answers.
 - Default tests remain hermetic.
-- Do not add dependencies, `__init__.py`, generated outputs, videos, weights, secrets, or absolute local paths to source artifacts.
-- Phase 8 raw-video generation and Phase 9 real `TemporalMemory` candidate run are mandatory final-presentation gates.
-
-## Git and delivery
-
-- Do not amend prior commits.
-- Do not rebase, merge, or push remotely.
-- Do not modify `main`.
-- One green phase equals one commit and one progress-ledger update.
-- Finish with a concise report: phase, commit SHA/subject, tests and harnesses actually run, review outcome, artifacts, and next phase.
+- No new dependencies, `__init__.py`, generated outputs, videos, weights, secrets, or absolute local paths in source artifacts.
+- Raw-video generation and a real `TemporalMemory` candidate remain mandatory final gates.
 
 ## Completion
 
-After Phase 9 and all final gates pass, set `AUTOMATION_STATUS: COMPLETE` and `CURRENT_PHASE: complete` in `progress.md` within the Phase 9 commit. Do not start further work.
+After step 09c and all final gates pass, set `AUTOMATION_STATUS: COMPLETE`, `CURRENT_STEP: complete`, and `CURRENT_PHASE: complete` in `progress.md`, commit, push, and verify remote HEAD. Do not start further work.

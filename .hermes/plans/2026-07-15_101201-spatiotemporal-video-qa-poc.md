@@ -1,6 +1,6 @@
 # Spatiotemporal Video QA POC
 
-> Implementation index. Load only this file plus the current phase spec. Do not load every spec during implementation.
+> Architecture index. Implementation runs through one small checklist at a time in the [micro-spec index](spatiotemporal-video-qa-specs/steps/README.md).
 
 ## Goal
 
@@ -27,22 +27,22 @@ Before implementation, read:
 
 1. [`execution-protocol.md`](spatiotemporal-video-qa-specs/execution-protocol.md)
 2. [`quality-gates.md`](spatiotemporal-video-qa-specs/quality-gates.md)
-3. Only the current phase spec below.
+3. Only the earliest incomplete [micro-spec](spatiotemporal-video-qa-specs/steps/README.md).
 
-Run phases sequentially. A failed stop condition blocks all later phases.
+Each micro-spec is one reviewable commit and one immediate remote push. Phase specs below remain cross-cutting contracts; workers load one only at a phase-boundary step. A failed checklist blocks all later steps.
 
-| Phase | Spec | Replayable result | Commit |
+| Phase | Contract | Micro-steps | Replayable result |
 |---|---|---|---|
-| 0 | [`00-foundation.md`](spatiotemporal-video-qa-specs/00-foundation.md) | Clean baseline and frozen contracts | `chore(benchmark): record spatiotemporal QA baseline` |
-| 1 | [`01-tracer-and-contracts.md`](spatiotemporal-video-qa-specs/01-tracer-and-contracts.md) | One observation → question → score | `feat(benchmark): add a spatiotemporal QA tracer bullet` |
-| 2 | [`02-spatial-oracle.md`](spatiotemporal-video-qa-specs/02-spatial-oracle.md) | Four robust image-plane predicates | `feat(benchmark): derive robust image-plane relations` |
-| 3 | [`03-temporal-intervals.md`](spatiotemporal-video-qa-specs/03-temporal-intervals.md) | Replayable relation history | `feat(benchmark): build temporal relation intervals` |
-| 4 | [`04-question-generation.md`](spatiotemporal-video-qa-specs/04-question-generation.md) | ≥12 deterministic spatial/temporal cases | `feat(benchmark): generate spatial and temporal questions` |
-| 5 | [`05-bundles.md`](spatiotemporal-video-qa-specs/05-bundles.md) | Immutable public/oracle bundle | `feat(benchmark): write replayable spatiotemporal bundles` |
-| 6 | [`06-scoring-and-runner.md`](spatiotemporal-video-qa-specs/06-scoring-and-runner.md) | Typed predictions and diagnostic report | `feat(benchmark): score typed spatiotemporal answers` |
-| 7 | [`07-observation-replay.md`](spatiotemporal-video-qa-specs/07-observation-replay.md) | Saved observations reproduce the bundle | `feat(benchmark): replay canonical object observations` |
-| 8 | [`08-video-generation.md`](spatiotemporal-video-qa-specs/08-video-generation.md) | Raw video → canonical observations → evals | `feat(benchmark): adapt tracked video detections to observations` |
-| 9 | [`09-demo-and-delivery.md`](spatiotemporal-video-qa-specs/09-demo-and-delivery.md) | One-command demo and PR evidence | `docs(benchmark): add the spatiotemporal QA demo` |
+| 0 | [`00-foundation.md`](spatiotemporal-video-qa-specs/00-foundation.md) | complete | Clean baseline and frozen contracts |
+| 1 | [`01-tracer-and-contracts.md`](spatiotemporal-video-qa-specs/01-tracer-and-contracts.md) | 01a–01d | One observation → question → score |
+| 2 | [`02-spatial-oracle.md`](spatiotemporal-video-qa-specs/02-spatial-oracle.md) | 02a–02b | Four robust image-plane predicates |
+| 3 | [`03-temporal-intervals.md`](spatiotemporal-video-qa-specs/03-temporal-intervals.md) | 03a–03b | Replayable relation history |
+| 4 | [`04-question-generation.md`](spatiotemporal-video-qa-specs/04-question-generation.md) | 04a–04b | Deterministic spatial/temporal cases |
+| 5 | [`05-bundles.md`](spatiotemporal-video-qa-specs/05-bundles.md) | 05a–05b | Immutable public/oracle bundle |
+| 6 | [`06-scoring-and-runner.md`](spatiotemporal-video-qa-specs/06-scoring-and-runner.md) | 06a–06b | Typed predictions and diagnostic report |
+| 7 | [`07-observation-replay.md`](spatiotemporal-video-qa-specs/07-observation-replay.md) | 07a–07b | Saved observations reproduce the bundle |
+| 8 | [`08-video-generation.md`](spatiotemporal-video-qa-specs/08-video-generation.md) | 08a–08c | Raw video → canonical observations → evals |
+| 9 | [`09-demo-and-delivery.md`](spatiotemporal-video-qa-specs/09-demo-and-delivery.md) | 09a–09c | Real candidate and one-command demo |
 
 ## Recommended execution boundary
 

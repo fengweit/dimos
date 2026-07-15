@@ -2,42 +2,70 @@
 
 AUTOMATION_STATUS: READY
 CURRENT_PHASE: 1
-LAST_COMPLETED_PHASE: 0
+CURRENT_STEP: 01a
+LAST_COMPLETED_STEP: 00
 
-> Append-only execution ledger. Every implementation or blocker commit must update this file with real evidence. Do not record claimed results that were not executed in the main worktree.
+> Append-only execution ledger. Every micro-spec or blocker commit must update this file with real evidence and be pushed to the remote feature branch.
 
 ## Required entry format
 
 ```text
-## Phase N — <name>
+## Step NNx — <name>
 State: COMPLETE | BLOCKED
 Commit subject: <subject>
-Delivered: <replayable behavior/artifact>
+Changed files: <focused file list>
+Delivered: <one replayable behavior>
 Harness evidence:
 - `<exact command>` → <actual result>
 Reviews:
-- Specification: <result>
-- Quality/adversarial: <result>
+- Focused review: <result>
 Blockers: none | <one actionable blocker>
-Next: Phase N+1 — <name> | stopped
+Remote: origin/feat/spatiotemporal-video-qa at local HEAD
+Next: Step NNx | stopped
 ```
 
-## Phase status
+## Micro-step status
 
-| Phase | Feature | State |
+| Step | Feature | State |
 |---|---|---|
-| 0 | Foundation and frozen contracts | COMPLETE |
-| 1 | Contracts and spatial tracer bullet | PENDING |
-| 2 | Robust spatial oracle | PENDING |
-| 3 | Temporal relation intervals | PENDING |
-| 4 | Deterministic question generation | PENDING |
-| 5 | Replayable public/oracle bundles | PENDING |
-| 6 | Scoring and candidate runner | PENDING |
-| 7 | Canonical teacher-observation replay | PENDING |
-| 8 | Raw-video eval generation | PENDING |
-| 9 | Real TemporalMemory demo and delivery | PENDING |
+| 00 | Foundation and frozen contracts | COMPLETE |
+| 01a | Strict contracts and canonical IDs | READY |
+| 01b | One left-of relation | PENDING |
+| 01c | One public question and private answer | PENDING |
+| 01d | Exact score and tracer | PENDING |
+| 02a | Inverse and vertical predicates | PENDING |
+| 02b | Ambiguity and metamorphic harness | PENDING |
+| 03a | Relation intervals and gaps | PENDING |
+| 03b | Strict before and after | PENDING |
+| 04a | Spatial-at question generation | PENDING |
+| 04b | Temporal questions and balance | PENDING |
+| 05a | Bundle writer and loader | PENDING |
+| 05b | Hashes, leakage, and path safety | PENDING |
+| 06a | Prediction parsing and statuses | PENDING |
+| 06b | Evidence-linked report and candidate protocol | PENDING |
+| 07a | Canonical teacher-observation JSONL | PENDING |
+| 07b | Observation replay entry point | PENDING |
+| 08a | Video sampler and fake detector seam | PENDING |
+| 08b | YOLO-E adapter and identity contract | PENDING |
+| 08c | Real video to eval bundle | PENDING |
+| 09a | TemporalMemory candidate adapter | PENDING |
+| 09b | Real candidate smoke and evidence report | PENDING |
+| 09c | One-command demo and final package | PENDING |
 
 ## Execution entries
+
+## Automation update — micro-specs and remote progress
+State: COMPLETE
+Commit subject: `docs(benchmark): split implementation into micro-specs`
+Changed files: plan index, automation runner, progress ledger, and `steps/*.md`.
+Delivered: Twenty-two independently reviewable checklists; each green unit has one focused harness, one progress update, one commit, and one verified remote push.
+Harness evidence:
+- Local Markdown link validation and `git diff --check` are required before this commit.
+Reviews:
+- Scope adjustment: explicitly requested by the user to prevent phase-sized implementation blobs.
+Blockers: none
+Remote: push and remote-HEAD verification required immediately after commit
+Next: Step 01a — Strict contracts and canonical IDs
 
 ## Automation recovery — unattended review handoff
 State: COMPLETE
