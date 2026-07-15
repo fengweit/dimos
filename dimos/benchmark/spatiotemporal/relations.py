@@ -51,7 +51,8 @@ def _derive_ordered(
     before, after = (object_, subject) if reverse else (subject, object_)
     before_max = getattr(before.box, f"{axis}_max")
     after_min = getattr(after.box, f"{axis}_min")
-    if before_max + margin < after_min:
+    separation = after_min - before_max
+    if separation > margin:
         return SpatialRelationCandidate(
             subject=subject,
             predicate=predicate,
