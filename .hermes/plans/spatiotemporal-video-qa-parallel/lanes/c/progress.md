@@ -1,8 +1,8 @@
 # Lane C — Evaluation Progress
 
-AUTOMATION_STATUS: READY
-CURRENT_STEP: C3
-LAST_COMPLETED_STEP: C2
+AUTOMATION_STATUS: COMPLETE
+CURRENT_STEP: NONE
+LAST_COMPLETED_STEP: C3
 BRANCH: feat/stqa-evaluation
 WORKTREE: /Users/tian/dimos-worktrees/stqa-evaluation
 REMOTE: fork
@@ -11,7 +11,7 @@ REMOTE: fork
 |---|---|
 | C1 | COMPLETED |
 | C2 | COMPLETED |
-| C3 | PENDING |
+| C3 | COMPLETED |
 
 ## Append-only entries
 
@@ -38,3 +38,14 @@ Each completed/blocker entry records exact changed files, harness output, review
 - Commit subject: `feat(benchmark): report evidence-linked candidate scores`
 - Verified remote SHA before commit: `39be7b05ac377c9e21b231377c83fc878ebc3738`; resulting local/remote SHA equality is verified by the one-shot worker after push.
 - Next step: C3.
+
+### C3 — COMPLETED
+
+- Changed files: `dimos/benchmark/spatiotemporal/temporal_memory_answerer.py`, `dimos/benchmark/spatiotemporal/test_temporal_memory_answerer.py`, `.hermes/plans/spatiotemporal-video-qa-parallel/lanes/c/progress.md`
+- RED: `uv run pytest dimos/benchmark/spatiotemporal/test_temporal_memory_answerer.py::test_temporal_memory_answerer_enforces_public_candidate_lifecycle -v` — failed with the expected missing `temporal_memory_answerer` module.
+- GREEN: `uv run pytest dimos/benchmark/spatiotemporal/test_temporal_memory_answerer.py -v` — 1 passed.
+- Static checks: Ruff check and format passed; mypy passed for both owned Python files.
+- Review: independent foreground Hermes review returned `PASS`; no correction cycle required. Non-blocking suggestions were additional zero-frame and post-close answer coverage.
+- Commit subject: `feat(benchmark): add a TemporalMemory candidate adapter`
+- Verified remote SHA before commit: `11f41b06cb2cd894df4de16d5725add07254f278`; resulting local/remote SHA equality is verified by the one-shot worker after push.
+- Next step: lane complete.
