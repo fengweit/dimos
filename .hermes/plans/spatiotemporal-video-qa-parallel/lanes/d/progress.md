@@ -1,8 +1,8 @@
 # Lane D — Replay Progress
 
-AUTOMATION_STATUS: READY
-CURRENT_STEP: D2
-LAST_COMPLETED_STEP: D1
+AUTOMATION_STATUS: COMPLETE
+CURRENT_STEP: NONE
+LAST_COMPLETED_STEP: D2
 BRANCH: feat/stqa-replay
 WORKTREE: /Users/tian/dimos-worktrees/stqa-replay
 REMOTE: fork
@@ -10,7 +10,7 @@ REMOTE: fork
 | Step | State |
 |---|---|
 | D1 | COMPLETE |
-| D2 | PENDING |
+| D2 | COMPLETE |
 
 ## Append-only entries
 
@@ -42,3 +42,13 @@ Each completed/blocker entry records exact changed files, harness output, review
 - Authoritative concrete APIs are `generation.generate_spatial_questions`, `generation.generate_temporal_question_cases`, `bundles.write_bundle`, and `bundles.load_bundle`.
 - Lane D was manually synchronized with the integration branch; `d-001.md` is resolved without rebasing or force-pushing.
 - Next step: resume D2 against the frozen seam.
+
+### D2 — COMPLETE
+
+- Changed files: `dimos/benchmark/spatiotemporal/replay.py`, `dimos/benchmark/spatiotemporal/test_replay.py`, `.hermes/plans/spatiotemporal-video-qa-parallel/lanes/d/progress.md`.
+- RED: the replay entry-point test first failed because `replay.py` was absent; insufficiency variants then failed with untyped failures or no failure; the `no_questions` test failed because an empty generated question set was accepted.
+- Harness: `uv run pytest dimos/benchmark/spatiotemporal/test_replay.py -v` — 5 passed; `uv run ruff check ...` — passed; `uv run mypy dimos/benchmark/spatiotemporal/replay.py` — passed; `git diff --check` — passed.
+- Review disposition: the initial synchronous review received no untracked-file diff; the corrected one permitted re-review requested `no_questions` coverage and code-specific actionable diagnostics. All must-fix findings were corrected with a failing test and focused green gate; no further re-review was run per the one-cycle cap.
+- Commit subject: `feat(benchmark): replay observations into evaluation bundles`.
+- Verified remote SHA: `SELF` — resolved by the post-push equality check between local `HEAD` and `fork/feat/stqa-replay`; the invocation reports the exact SHA.
+- Next step: none; lane D is complete.
