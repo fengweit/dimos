@@ -45,4 +45,8 @@ Do not start Phase 1 while any semantic choice above is unresolved.
 
 ## Commit
 
-None.
+Update `progress.md` with the real baseline and reviewer evidence, then commit:
+
+```text
+chore(benchmark): record spatiotemporal QA baseline
+```

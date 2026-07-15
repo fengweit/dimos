@@ -33,7 +33,7 @@ Run phases sequentially. A failed stop condition blocks all later phases.
 
 | Phase | Spec | Replayable result | Commit |
 |---|---|---|---|
-| 0 | [`00-foundation.md`](spatiotemporal-video-qa-specs/00-foundation.md) | Clean baseline and frozen contracts | none |
+| 0 | [`00-foundation.md`](spatiotemporal-video-qa-specs/00-foundation.md) | Clean baseline and frozen contracts | `chore(benchmark): record spatiotemporal QA baseline` |
 | 1 | [`01-tracer-and-contracts.md`](spatiotemporal-video-qa-specs/01-tracer-and-contracts.md) | One observation → question → score | `feat(benchmark): add a spatiotemporal QA tracer bullet` |
 | 2 | [`02-spatial-oracle.md`](spatiotemporal-video-qa-specs/02-spatial-oracle.md) | Four robust image-plane predicates | `feat(benchmark): derive robust image-plane relations` |
 | 3 | [`03-temporal-intervals.md`](spatiotemporal-video-qa-specs/03-temporal-intervals.md) | Replayable relation history | `feat(benchmark): build temporal relation intervals` |
