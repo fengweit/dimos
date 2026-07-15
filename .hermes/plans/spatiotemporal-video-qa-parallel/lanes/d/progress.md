@@ -1,17 +1,54 @@
 # Lane D — Replay Progress
 
-AUTOMATION_STATUS: READY
-CURRENT_STEP: D1
-LAST_COMPLETED_STEP: NONE
+AUTOMATION_STATUS: COMPLETE
+CURRENT_STEP: NONE
+LAST_COMPLETED_STEP: D2
 BRANCH: feat/stqa-replay
 WORKTREE: /Users/tian/dimos-worktrees/stqa-replay
 REMOTE: fork
 
 | Step | State |
 |---|---|
-| D1 | PENDING |
-| D2 | PENDING |
+| D1 | COMPLETE |
+| D2 | COMPLETE |
 
 ## Append-only entries
 
 Each completed/blocker entry records exact changed files, harness output, review disposition, commit subject, verified remote SHA, and next step.
+
+### D1 — COMPLETE
+
+- Changed files: `dimos/benchmark/spatiotemporal/observation_io.py`, `dimos/benchmark/spatiotemporal/test_observation_io.py`, `.hermes/plans/spatiotemporal-video-qa-parallel/lanes/d/progress.md`.
+- RED: duplicate JSON field test failed because `read_observations` accepted the field; canonical-byte variants failed because the reader accepted noncanonical JSONL; writer revalidation variants failed because copied invalid models were serialized.
+- Harness: `uv run pytest dimos/benchmark/spatiotemporal/test_observation_io.py -v` — 9 passed; `uv run ruff check ...` — passed; `uv run mypy dimos/benchmark/spatiotemporal/observation_io.py` — passed; `git diff --check` — passed.
+- Review disposition: first review requested canonical-byte enforcement and explicit overflow/writer coverage; corrected. The one permitted re-review requested writer-side model revalidation; corrected with a failing test and focused green gate. No further re-review was run per the one-cycle cap.
+- Commit subject: `feat(benchmark): persist canonical teacher observations`.
+- Verified remote SHA: `SELF` — resolved by the post-push equality check between local `HEAD` and `fork/feat/stqa-replay`; the invocation reports the exact SHA.
+- Next step: D2.
+
+### D2 — BLOCKED_INTERFACE
+
+- Changed files: `.hermes/plans/spatiotemporal-video-qa-parallel/interface-change-requests/d-001.md`, `.hermes/plans/spatiotemporal-video-qa-parallel/lanes/d/progress.md`.
+- Blocker: the frozen interfaces define records but no callable observation-to-generation or bundle-writing APIs, replay insufficiency contract, or root-independent logical-hash semantics. Lane D did not duplicate or guess integration-owned APIs.
+- Harness: no RED/GREEN gate was run because the interface prerequisite is unavailable; the working tree passed the lane D ownership guard before the request was authored.
+- Review disposition: synchronous independent `hermes --yolo chat --quiet -q` review returned `VERDICT: APPROVE` with no must-fix issues.
+- Commit subject: `chore(benchmark): request replay bundle interface`.
+- Verified remote SHA: `SELF` — resolved by the post-push equality check between local `HEAD` and `fork/feat/stqa-replay`; the invocation reports the exact SHA.
+- Next step: D2 remains blocked pending resolution of `d-001.md`.
+
+### D2 — INTERFACE RESOLVED
+
+- Integration merged Lane A/B APIs and froze `ObservationBundleGenerator`, `ReplayBundleResult`, root-independent logical hashing, and stable insufficiency codes in `ports.py` at `7ebf29c884323e9755b0b8f3720aafbee73d8b79`.
+- Authoritative concrete APIs are `generation.generate_spatial_questions`, `generation.generate_temporal_question_cases`, `bundles.write_bundle`, and `bundles.load_bundle`.
+- Lane D was manually synchronized with the integration branch; `d-001.md` is resolved without rebasing or force-pushing.
+- Next step: resume D2 against the frozen seam.
+
+### D2 — COMPLETE
+
+- Changed files: `dimos/benchmark/spatiotemporal/replay.py`, `dimos/benchmark/spatiotemporal/test_replay.py`, `.hermes/plans/spatiotemporal-video-qa-parallel/lanes/d/progress.md`.
+- RED: the replay entry-point test first failed because `replay.py` was absent; insufficiency variants then failed with untyped failures or no failure; the `no_questions` test failed because an empty generated question set was accepted.
+- Harness: `uv run pytest dimos/benchmark/spatiotemporal/test_replay.py -v` — 5 passed; `uv run ruff check ...` — passed; `uv run mypy dimos/benchmark/spatiotemporal/replay.py` — passed; `git diff --check` — passed.
+- Review disposition: the initial synchronous review received no untracked-file diff; the corrected one permitted re-review requested `no_questions` coverage and code-specific actionable diagnostics. All must-fix findings were corrected with a failing test and focused green gate; no further re-review was run per the one-cycle cap.
+- Commit subject: `feat(benchmark): replay observations into evaluation bundles`.
+- Verified remote SHA: `SELF` — resolved by the post-push equality check between local `HEAD` and `fork/feat/stqa-replay`; the invocation reports the exact SHA.
+- Next step: none; lane D is complete.
