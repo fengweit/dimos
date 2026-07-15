@@ -17,7 +17,12 @@
 from collections.abc import Sequence
 from itertools import pairwise
 
-from dimos.benchmark.spatiotemporal.models import RelationFact, RelationInterval
+from dimos.benchmark.spatiotemporal.models import (
+    RelationFact,
+    RelationId,
+    RelationInterval,
+    TemporalPredicate,
+)
 from dimos.benchmark.spatiotemporal.utilities import SCHEMA_VERSION, JsonValue, stable_id
 
 
@@ -97,3 +102,37 @@ def build_relation_intervals(facts: Sequence[RelationFact]) -> tuple[RelationInt
         else:
             groups.append([fact])
     return tuple(_build_interval(group) for group in groups)
+
+
+def derive_temporal_predicate(
+    first_relation_id: RelationId,
+    second_relation_id: RelationId,
+    intervals: Sequence[RelationInterval],
+) -> TemporalPredicate | None:
+    """Return a strict order only when all matching interval evidence agrees."""
+    first = [interval for interval in intervals if interval.relation_id == first_relation_id]
+    second = [interval for interval in intervals if interval.relation_id == second_relation_id]
+    first_episodes = {interval.episode_id for interval in first}
+    second_episodes = {interval.episode_id for interval in second}
+    if not first or not second or first_episodes != second_episodes:
+        return None
+
+    predicates: set[TemporalPredicate] = set()
+    for first_interval in first:
+        for second_interval in second:
+            if first_interval.episode_id != second_interval.episode_id:
+                continue
+            if (
+                first_interval.end_frame_id < second_interval.start_frame_id
+                and first_interval.end_timestamp_s < second_interval.start_timestamp_s
+            ):
+                predicates.add(TemporalPredicate.BEFORE)
+            elif (
+                second_interval.end_frame_id < first_interval.start_frame_id
+                and second_interval.end_timestamp_s < first_interval.start_timestamp_s
+            ):
+                predicates.add(TemporalPredicate.AFTER)
+            else:
+                return None
+
+    return predicates.pop() if len(predicates) == 1 else None

@@ -16,7 +16,12 @@
 
 import pytest
 
-from dimos.benchmark.spatiotemporal.models import RelationFact, SpatialPredicate
+from dimos.benchmark.spatiotemporal.models import (
+    RelationFact,
+    RelationInterval,
+    SpatialPredicate,
+    TemporalPredicate,
+)
 from dimos.benchmark.spatiotemporal.utilities import SCHEMA_VERSION, stable_id
 
 
@@ -146,3 +151,95 @@ def test_rejects_conflicting_episode_sample_schedules(
 
     with pytest.raises(ValueError, match="conflicting sample schedule"):
         build_relation_intervals(facts)
+
+
+def test_derives_only_unanimous_strict_temporal_ordering() -> None:
+    from dimos.benchmark.spatiotemporal.intervals import (
+        build_relation_intervals,
+        derive_temporal_predicate,
+    )
+
+    earlier = _relation_id("mug_1", SpatialPredicate.LEFT_OF, "laptop_1")
+    later = _relation_id("lamp_1", SpatialPredicate.ABOVE, "table_1")
+
+    def paired_intervals(
+        first_frames: tuple[int, ...], second_frames: tuple[int, ...]
+    ) -> tuple[RelationInterval, ...]:
+        return build_relation_intervals(
+            tuple(_fact(frame, frame / 10) for frame in first_frames)
+            + tuple(
+                _fact(
+                    frame,
+                    frame / 10,
+                    subject_id="lamp_1",
+                    predicate=SpatialPredicate.ABOVE,
+                    object_id="table_1",
+                )
+                for frame in second_frames
+            )
+        )
+
+    ordered_facts = (
+        _fact(1, 0.1),
+        _fact(2, 0.2),
+        _fact(
+            4,
+            0.4,
+            subject_id="lamp_1",
+            predicate=SpatialPredicate.ABOVE,
+            object_id="table_1",
+        ),
+        _fact(
+            5,
+            0.5,
+            subject_id="lamp_1",
+            predicate=SpatialPredicate.ABOVE,
+            object_id="table_1",
+        ),
+    )
+    ordered = build_relation_intervals(ordered_facts)
+
+    assert derive_temporal_predicate(earlier, later, ordered) is TemporalPredicate.BEFORE
+    assert derive_temporal_predicate(later, earlier, ordered) is TemporalPredicate.AFTER
+    assert (
+        derive_temporal_predicate(earlier, later, tuple(reversed(ordered)))
+        is TemporalPredicate.BEFORE
+    )
+
+    touching = paired_intervals((1, 2), (2, 3))
+    overlapping = paired_intervals((1, 2, 3), (2, 3, 4))
+    containing = paired_intervals((1, 2, 3, 4, 5), (2, 3, 4))
+    contradictory = build_relation_intervals(
+        (
+            *ordered_facts,
+            _fact(4, 0.4, episode_id="episode_2"),
+            _fact(
+                1,
+                0.1,
+                episode_id="episode_2",
+                subject_id="lamp_1",
+                predicate=SpatialPredicate.ABOVE,
+                object_id="table_1",
+            ),
+        )
+    )
+    coordinate_contradiction = build_relation_intervals((_fact(1, 0.4),)) + (
+        build_relation_intervals(
+            (
+                _fact(
+                    4,
+                    0.1,
+                    subject_id="lamp_1",
+                    predicate=SpatialPredicate.ABOVE,
+                    object_id="table_1",
+                ),
+            )
+        )
+    )
+
+    assert derive_temporal_predicate(earlier, later, touching) is None
+    assert derive_temporal_predicate(earlier, later, overlapping) is None
+    assert derive_temporal_predicate(earlier, later, containing) is None
+    assert derive_temporal_predicate(earlier, "relation_" + "0" * 64, ordered) is None
+    assert derive_temporal_predicate(earlier, later, contradictory) is None
+    assert derive_temporal_predicate(earlier, later, coordinate_contradiction) is None
