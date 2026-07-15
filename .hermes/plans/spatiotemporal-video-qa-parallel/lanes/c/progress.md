@@ -1,8 +1,8 @@
 # Lane C — Evaluation Progress
 
 AUTOMATION_STATUS: READY
-CURRENT_STEP: C2
-LAST_COMPLETED_STEP: C1
+CURRENT_STEP: C3
+LAST_COMPLETED_STEP: C2
 BRANCH: feat/stqa-evaluation
 WORKTREE: /Users/tian/dimos-worktrees/stqa-evaluation
 REMOTE: fork
@@ -10,7 +10,7 @@ REMOTE: fork
 | Step | State |
 |---|---|
 | C1 | COMPLETED |
-| C2 | PENDING |
+| C2 | COMPLETED |
 | C3 | PENDING |
 
 ## Append-only entries
@@ -27,3 +27,14 @@ Each completed/blocker entry records exact changed files, harness output, review
 - Commit subject: `feat(benchmark): parse typed candidate predictions`
 - Verified remote SHA before commit: `59b45f77ae8704f2602edebb091da4b6fd46c1cb`; resulting local/remote SHA equality is verified by the one-shot worker after push.
 - Next step: C2.
+
+### C2 — COMPLETED
+
+- Changed files: `dimos/benchmark/spatiotemporal/scoring.py`, `dimos/benchmark/spatiotemporal/runner.py`, `dimos/benchmark/spatiotemporal/test_runner.py`, `.hermes/plans/spatiotemporal-video-qa-parallel/lanes/c/progress.md`
+- RED: `uv run pytest dimos/benchmark/spatiotemporal/test_runner.py::test_builds_evidence_linked_aggregate_report_with_filtered_diagnostics -v` — failed with the expected missing `build_evaluation_report` import.
+- GREEN: `uv run pytest dimos/benchmark/spatiotemporal/test_scoring.py dimos/benchmark/spatiotemporal/test_runner.py -v` — 11 passed.
+- Static checks: Ruff passed; mypy passed for all four owned Python files.
+- Review: independent foreground Hermes review returned `PASS`; no correction cycle required.
+- Commit subject: `feat(benchmark): report evidence-linked candidate scores`
+- Verified remote SHA before commit: `39be7b05ac377c9e21b231377c83fc878ebc3738`; resulting local/remote SHA equality is verified by the one-shot worker after push.
+- Next step: C3.
