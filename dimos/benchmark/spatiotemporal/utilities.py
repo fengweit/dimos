@@ -17,14 +17,15 @@
 from collections.abc import Mapping, Sequence
 from hashlib import sha256
 import json
-from typing import TypeAlias
+from typing import Final, Literal, TypeAlias
 
 from pydantic import BaseModel
 
 JsonValue: TypeAlias = (
     str | bool | None | int | float | Mapping[str, "JsonValue"] | Sequence["JsonValue"]
 )
-SCHEMA_VERSION = "spatiotemporal-video-qa/v1"
+SchemaVersion: TypeAlias = Literal["spatiotemporal-video-qa/v1"]
+SCHEMA_VERSION: Final[SchemaVersion] = "spatiotemporal-video-qa/v1"
 
 
 def canonical_json_bytes(value: JsonValue) -> bytes:
