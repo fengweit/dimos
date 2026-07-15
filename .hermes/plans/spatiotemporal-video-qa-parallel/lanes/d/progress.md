@@ -1,6 +1,6 @@
 # Lane D — Replay Progress
 
-AUTOMATION_STATUS: BLOCKED_INTERFACE
+AUTOMATION_STATUS: READY
 CURRENT_STEP: D2
 LAST_COMPLETED_STEP: D1
 BRANCH: feat/stqa-replay
@@ -10,7 +10,7 @@ REMOTE: fork
 | Step | State |
 |---|---|
 | D1 | COMPLETE |
-| D2 | BLOCKED_INTERFACE |
+| D2 | PENDING |
 
 ## Append-only entries
 
@@ -35,3 +35,10 @@ Each completed/blocker entry records exact changed files, harness output, review
 - Commit subject: `chore(benchmark): request replay bundle interface`.
 - Verified remote SHA: `SELF` — resolved by the post-push equality check between local `HEAD` and `fork/feat/stqa-replay`; the invocation reports the exact SHA.
 - Next step: D2 remains blocked pending resolution of `d-001.md`.
+
+### D2 — INTERFACE RESOLVED
+
+- Integration merged Lane A/B APIs and froze `ObservationBundleGenerator`, `ReplayBundleResult`, root-independent logical hashing, and stable insufficiency codes in `ports.py` at `7ebf29c884323e9755b0b8f3720aafbee73d8b79`.
+- Authoritative concrete APIs are `generation.generate_spatial_questions`, `generation.generate_temporal_question_cases`, `bundles.write_bundle`, and `bundles.load_bundle`.
+- Lane D was manually synchronized with the integration branch; `d-001.md` is resolved without rebasing or force-pushing.
+- Next step: resume D2 against the frozen seam.
