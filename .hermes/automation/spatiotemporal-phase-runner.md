@@ -19,7 +19,7 @@ Read only the plan index, progress ledger, and earliest incomplete micro-spec. R
 Complete exactly one earliest incomplete micro-spec per run. Never combine steps.
 
 1. Verify the required branch and inspect status/history.
-2. Before editing, ensure every existing local commit is on `origin/feat/spatiotemporal-video-qa`; push pending local commits first and verify remote HEAD.
+2. Before editing, ensure every existing local commit is on `fork/feat/spatiotemporal-video-qa`; push pending local commits first and verify remote HEAD.
 3. Preserve unrelated work. Current uncommitted files may be split only according to the earliest micro-spec's file scope.
 4. Follow RED-GREEN-REFACTOR for the focused behavior.
 5. Run the micro-spec harness in the main worktree. Run broad phase gates only on phase-boundary micro-specs.
@@ -27,7 +27,7 @@ Complete exactly one earliest incomplete micro-spec per run. Never combine steps
 7. Update `progress.md` with exact commands/results, review disposition, changed files, and next step.
 8. Stage only the current micro-spec files plus `progress.md`. Never stage the whole benchmark directory blindly.
 9. Commit with the exact micro-spec subject. Every implementation commit must include `progress.md`.
-10. Push immediately to `origin feat/spatiotemporal-video-qa`, verify remote HEAD equals local HEAD, and finish with a clean worktree except files intentionally belonging to later micro-specs.
+10. Push immediately to `fork feat/spatiotemporal-video-qa`, verify remote HEAD equals local HEAD, and finish with a clean worktree except files intentionally belonging to later micro-specs.
 
 ## Existing partial Phase 1 work
 

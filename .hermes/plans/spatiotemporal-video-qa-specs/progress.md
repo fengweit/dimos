@@ -20,7 +20,7 @@ Harness evidence:
 Reviews:
 - Focused review: <result>
 Blockers: none | <one actionable blocker>
-Remote: origin/feat/spatiotemporal-video-qa at local HEAD
+Remote: fork/feat/spatiotemporal-video-qa at local HEAD
 Next: Step NNx | stopped
 ```
 
@@ -156,3 +156,18 @@ Reviews:
 Blockers: none
 Remote: not pushed; the one-run contract explicitly forbids remote push.
 Next: Phase 2 — Spatial predicates and ambiguity, beginning with Step 02a.
+
+## Automation update — writable fork routing
+State: COMPLETE
+Commit subject: `fix(benchmark): route progress pushes to writable fork`
+Changed files: automation runner, micro-spec checklists, and this progress ledger.
+Delivered: GitHub authentication verified as `fengweit`; writable fork created; local branch published and configured to track `fork/feat/spatiotemporal-video-qa`; every future micro-spec now requires a SHA-verified push to that branch.
+Harness evidence:
+- `gh auth status` → authenticated as `fengweit` with `repo` scope and HTTPS Git operations.
+- `git push -u fork feat/spatiotemporal-video-qa` → created the remote branch.
+- Local and remote SHA verification → both `e38928e4a6a1944a72fe780a79f4576ec0eb6246` before this routing commit.
+Reviews:
+- Remote isolation: upstream `origin` remains read-only and unchanged; all implementation progress targets the account fork.
+Blockers: none
+Remote: push this commit to `fork/feat/spatiotemporal-video-qa`, then verify exact SHA equality
+Next: Step 02a — Inverse and vertical predicates
