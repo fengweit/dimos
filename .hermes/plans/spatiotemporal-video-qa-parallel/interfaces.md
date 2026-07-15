@@ -44,6 +44,31 @@ class CandidateAnswerer(Protocol):
 
 `DetectedObject` contains only object ID, label, normalized box, and confidence. `CandidateReadiness` contains only readiness, ingested frame count, and an optional candidate-originated detail. No candidate-facing record may contain teacher observations, relation facts/intervals, answers, evidence, oracle manifests, or private roots.
 
+## Frozen replay-generation seam
+
+Authoritative integration-owned types live in `ports.py`:
+
+```python
+class ObservationBundleGenerator(Protocol):
+    def generate(
+        self,
+        observations: Sequence[ObjectObservation],
+        output_root: Path,
+        source_video_sha256: str,
+    ) -> ReplayBundleResult: ...
+```
+
+`ReplayBundleResult` returns matching public/oracle manifests and `logical_sha256`, defined as SHA-256 over canonical JSON containing those two manifest values; extraction-root paths never enter the preimage. The oracle manifest must bind the canonical newline-terminated public manifest bytes. Insufficiency uses `ReplayInsufficiencyError` with one of `empty_observations`, `mixed_episodes`, `no_relations`, or `no_questions`.
+
+Authoritative concrete APIs already merged from Lane B are:
+
+- `generation.generate_spatial_questions(facts)`
+- `generation.generate_temporal_question_cases(intervals)`
+- `bundles.write_bundle(...)`
+- `bundles.load_bundle(root)`
+
+D2 owns observation replay and may depend on an injected `ObservationBundleGenerator`; it must not duplicate relation/question/bundle implementations.
+
 ## Ownership and change protocol
 
 `models.py`, `utilities.py`, `ports.py`, `test_models.py`, and `test_ports.py` are integration-owned. Lanes must stop and create `interface-change-requests/<lane>-<sequence>.md` rather than editing a shared contract or defining a duplicate type.
