@@ -1,9 +1,9 @@
 # Spatiotemporal Video QA Implementation Progress
 
 AUTOMATION_STATUS: READY
-CURRENT_PHASE: 1
-CURRENT_STEP: 01a
-LAST_COMPLETED_STEP: 00
+CURRENT_PHASE: 2
+CURRENT_STEP: 02a
+LAST_COMPLETED_STEP: 01d
 
 > Append-only execution ledger. Every micro-spec or blocker commit must update this file with real evidence and be pushed to the remote feature branch.
 
@@ -29,10 +29,10 @@ Next: Step NNx | stopped
 | Step | Feature | State |
 |---|---|---|
 | 00 | Foundation and frozen contracts | COMPLETE |
-| 01a | Strict contracts and canonical IDs | READY |
-| 01b | One left-of relation | PENDING |
-| 01c | One public question and private answer | PENDING |
-| 01d | Exact score and tracer | PENDING |
+| 01a | Strict contracts and canonical IDs | COMPLETE |
+| 01b | One left-of relation | COMPLETE |
+| 01c | One public question and private answer | COMPLETE |
+| 01d | Exact score and tracer | COMPLETE |
 | 02a | Inverse and vertical predicates | PENDING |
 | 02b | Ambiguity and metamorphic harness | PENDING |
 | 03a | Relation intervals and gaps | PENDING |
@@ -127,3 +127,32 @@ Frozen decisions:
 - Normalized geometry and margins: boxes use top-left-origin `(x_min, y_min, x_max, y_max)`, with x divided by image width and y by image height. A present sample's box is malformed when it has wrong arity/type, a non-finite coordinate, or fails `0 <= x_min < x_max <= 1` and `0 <= y_min < y_max <= 1`; reject the whole input rather than converting malformed data to unknown. An explicitly missing sample must contain no object observations or boxes, and any payload on it is rejected. A single finite dimensionless margin `m` with `0 <= m <= 1` is applied axis-locally: `left-of(A,B)` iff `A.x_max + m < B.x_min`, and `above(A,B)` iff `A.y_max + m < B.y_min`; `right-of` and `below` swap arguments. A predicate is false only when its strict inverse is true. Equality at the margin, valid overlap/containment, self-relations, or missing objects are unknown and ineligible for Boolean question generation.
 Blockers: none
 Next: Phase 1 — Contracts and spatial tracer bullet
+
+## Phase 1 — Tracer and contracts
+State: COMPLETE
+Commit subject: `feat(benchmark): add typed spatial QA tracer`
+Changed files: `dimos/benchmark/spatiotemporal/{models,relations,questions,scoring,utilities}.py`, six colocated `test_*.py` files, and this progress ledger. No dependency, lockfile, `__init__.py`, generated output, video, weight, secret, or absolute source-artifact path was added.
+Delivered: Strict immutable Pydantic observation/question/oracle/prediction/result contracts; canonical SHA-256 question IDs; normalized strict-margin `left-of`; answer-free public question/private oracle separation; exact Boolean scoring; and a replayable observation → relation → question → oracle → prediction → score tracer.
+TDD evidence:
+- Focused RED runs failed for missing strict bounds, observation constraints, strict-margin relation derivation, stable question construction, private oracle separation, exact scoring, canonical serialization, invalid margin/sample alignment, score-record ID alignment, self-relation filtering, finite timestamp translation, canonical question validation, candidate revalidation, and question/relation oracle alignment. Each corresponding focused test then passed after the minimal production change.
+- `uv run pytest dimos/benchmark/spatiotemporal/test_questions.py::test_rejects_forged_relation_candidate_during_question_construction -v` → RED: failed because a forged threshold-equality candidate was accepted; GREEN: passed after downstream candidate revalidation.
+- `uv run pytest dimos/benchmark/spatiotemporal/test_questions.py::test_rejects_private_oracle_for_an_unrelated_relation -v` → RED: failed because unrelated relation truth was accepted; GREEN: passed after executable-contract and episode alignment checks.
+Harness evidence:
+- `uv run pytest -q dimos/benchmark/spatiotemporal/test_utilities.py::test_serializes_strict_records_to_identical_canonical_json dimos/benchmark/spatiotemporal/test_relations.py::test_accepts_left_of_relation_only_above_strict_margin dimos/benchmark/spatiotemporal/test_tracer.py::test_observations_flow_to_public_question_private_oracle_and_score` → H0/H1/H2 passed: 3 passed in 0.01s.
+- `uv run pytest dimos/benchmark/spatiotemporal -q` → 16 passed in 0.02s. The command emitted the same pre-existing uv/Python subprocess `ResourceWarning` recorded in the Phase 0 baseline; the Phase 1 tests emitted no package warning.
+- `uv run ruff format --check dimos/benchmark/spatiotemporal && uv run ruff check dimos/benchmark/spatiotemporal` → 11 files already formatted; all checks passed.
+- `uv run mypy` → `Success: no issues found in 863 source files`.
+- `git diff --check` → passed with no output.
+Replayable artifact:
+- `dimos/benchmark/spatiotemporal/test_tracer.py::test_observations_flow_to_public_question_private_oracle_and_score`; replay with `uv run pytest dimos/benchmark/spatiotemporal/test_tracer.py -v`.
+Reviews:
+- Every completed review ran sequentially from the repository root as a separate foreground `$HOME/.local/bin/hermes --yolo chat --quiet -q '<read-only prompt>'` command. Prompts prohibited modifications, commits, tests where requested, agent launches, and later-phase spec reads.
+- Specification follow-up (`20260715_122152_4226a6`) → FAIL. Accepted finite margin and same-sample validation, valid Unicode scalar enforcement, same-object filtering, and a full end-to-end tracer. The scalar rejection was already provided by Pydantic and proved by regression test, then made explicit at the contract boundary.
+- Specification follow-up (`20260715_122508_c18e51`) → FAIL. Accepted finite negative timestamp translation and immediately-below/at/above threshold coverage.
+- Specification follow-up (`20260715_123330_7e6bc6`) → FAIL. Accepted explicit Unicode-scalar validation. Rejected missing ledger evidence as procedural before final harness execution and ledger update.
+- Quality/adversarial initial review (`20260715_123606_b8bf42`) → FAIL. Accepted canonical Question ID/self-relation validation, forged-candidate revalidation, question/relation oracle alignment, scoring-ID alignment, and always-yes false-truth coverage. Rejected a durable public relation-proposition model as outside Phase 1 because the phase explicitly permits a temporary relation candidate; deferred non-blocking evidence/result hardening.
+- Quality/adversarial follow-up (`20260715_125327_39ceee`) → PASS with no blockers. Non-blocking suggestions were evidence-frame constraints and direct `QuestionResult.correct` consistency; scorer/builder outputs are valid and those broader contract refinements are deferred.
+- Specification final (`20260715_125607_6deb28`) → PASS with no blockers and confirmed the complete tracer, strict contracts, canonical IDs, relation boundary semantics, candidate/oracle revalidation, and separate-oracle exact scoring.
+Blockers: none
+Remote: not pushed; the one-run contract explicitly forbids remote push.
+Next: Phase 2 — Spatial predicates and ambiguity, beginning with Step 02a.
