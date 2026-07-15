@@ -7,7 +7,7 @@ The worker invocation prepends the lane name, exact worktree, branch, ownership 
 3. Never edit integration-owned shared contracts, another lane's files/ledger, the global board, demo/docs, or unowned paths.
 4. If the interface is insufficient, create only `interface-change-requests/<lane>-<sequence>.md`, mark `BLOCKED_INTERFACE`, commit/push that request, and exit.
 5. Use RED-GREEN-REFACTOR: one failing test, expected failure, minimal implementation, focused green gate, refactor while green.
-6. Run one focused independent review and at most one correction/re-review cycle.
+6. Run one focused independent review synchronously in a separate foreground `hermes --yolo chat --quiet -q` subprocess and consume its verdict before continuing. Never use asynchronous `delegate_task` from an unattended one-shot worker. Allow at most one correction/re-review cycle.
 7. Run `~/.hermes/scripts/dimos_stqa_lane_guard.sh <lane> --working-tree` before staging and again with `--cached` before committing.
 8. Update only this lane's append-only ledger, stage explicit files, make one specified commit, push only `fork/<branch>`, and verify local/remote SHA equality.
 9. Never force-push, amend, rebase, reset, stash, broad-add, merge, install/sync dependencies, access model/network/LFS assets, or run real video/model/TemporalMemory gates.
