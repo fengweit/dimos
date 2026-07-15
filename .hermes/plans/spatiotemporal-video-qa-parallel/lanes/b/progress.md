@@ -1,8 +1,8 @@
 # Lane B — Dataset Progress
 
 AUTOMATION_STATUS: READY
-CURRENT_STEP: B2
-LAST_COMPLETED_STEP: B1
+CURRENT_STEP: B3
+LAST_COMPLETED_STEP: B2
 BRANCH: feat/stqa-dataset
 WORKTREE: /Users/tian/dimos-worktrees/stqa-dataset
 REMOTE: fork
@@ -10,7 +10,7 @@ REMOTE: fork
 | Step | State |
 |---|---|
 | B1 | COMPLETE |
-| B2 | PENDING |
+| B2 | COMPLETE |
 | B3 | PENDING |
 | B4 | PENDING |
 
@@ -28,3 +28,14 @@ Each completed/blocker entry records exact changed files, harness output, review
 - Commit subject: `feat(benchmark): generate spatial-at questions`
 - Remote verification: post-push local/`fork/feat/stqa-dataset` equality gate (the creating commit cannot self-embed its own SHA); exact SHA recorded in worker execution output.
 - Next step: B2.
+
+### B2 — COMPLETE
+
+- Changed files: `dimos/benchmark/spatiotemporal/generation.py`, `dimos/benchmark/spatiotemporal/test_generation.py`, `.hermes/plans/spatiotemporal-video-qa-parallel/lanes/b/progress.md`
+- RED: `test_generates_balanced_temporal_questions_in_byte_stable_order` failed at collection because `generate_temporal_questions` was missing; review regression `test_omits_temporal_questions_with_bidirectional_interval_proofs` failed at collection because `generate_temporal_question_cases` was missing.
+- GREEN: `uv run pytest dimos/benchmark/spatiotemporal/test_generation.py -v` — 5 passed.
+- Static checks: focused Ruff check/format and mypy — passed.
+- Review: initial `REQUEST_CHANGES` for missing private polarity evidence, ambiguous recurring relations, and strict-order coverage; corrected with deterministic `OracleAnswer` cases and ambiguous-proof omission. The single allowed re-review requested only touching/overlap/frame-time disagreement coverage; those cases were added and the focused/static gates remained green.
+- Commit subject: `feat(benchmark): generate balanced temporal questions`
+- Remote verification: post-push local/`fork/feat/stqa-dataset` equality gate (the creating commit cannot self-embed its own SHA); exact SHA recorded in worker execution output.
+- Next step: B3.

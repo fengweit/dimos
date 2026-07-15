@@ -16,7 +16,14 @@
 
 from collections.abc import Sequence
 
-from dimos.benchmark.spatiotemporal.models import Question, QuestionKind, RelationFact
+from dimos.benchmark.spatiotemporal.models import (
+    OracleAnswer,
+    Question,
+    QuestionKind,
+    RelationFact,
+    RelationInterval,
+    TemporalPredicate,
+)
 from dimos.benchmark.spatiotemporal.utilities import SCHEMA_VERSION, stable_id
 
 
@@ -50,3 +57,108 @@ def generate_spatial_questions(facts: Sequence[RelationFact]) -> tuple[Question,
             ),
         )
     return tuple(questions[question_id] for question_id in sorted(questions))
+
+
+def generate_temporal_question_cases(
+    intervals: Sequence[RelationInterval],
+) -> tuple[tuple[Question, OracleAnswer], ...]:
+    """Generate balanced temporal cases with private interval-backed truth."""
+    if len({interval.episode_id for interval in intervals}) > 1:
+        raise ValueError("temporal questions must be generated from one episode")
+
+    proofs: dict[
+        tuple[str, str],
+        dict[tuple[str, str], list[tuple[RelationInterval, RelationInterval]]],
+    ] = {}
+    for index, left in enumerate(intervals):
+        for right in intervals[index + 1 :]:
+            if left.relation_id == right.relation_id:
+                continue
+            if (
+                left.end_frame_id < right.start_frame_id
+                and left.end_timestamp_s < right.start_timestamp_s
+            ):
+                first, second = left, right
+            elif (
+                right.end_frame_id < left.start_frame_id
+                and right.end_timestamp_s < left.start_timestamp_s
+            ):
+                first, second = right, left
+            else:
+                continue
+
+            relation_pair = (
+                min(first.relation_id, second.relation_id),
+                max(first.relation_id, second.relation_id),
+            )
+            orientation = (first.relation_id, second.relation_id)
+            proofs.setdefault(relation_pair, {}).setdefault(orientation, []).append((first, second))
+
+    cases: dict[str, tuple[Question, OracleAnswer]] = {}
+    for relation_pair in sorted(proofs):
+        orientations = proofs[relation_pair]
+        if len(orientations) != 1:
+            continue
+        interval_proofs = next(iter(orientations.values()))
+        first, second = min(
+            interval_proofs,
+            key=lambda proof: (proof[0].interval_id, proof[1].interval_id),
+        )
+        for predicate, references, expected in (
+            (
+                TemporalPredicate.BEFORE,
+                (first.relation_id, second.relation_id),
+                True,
+            ),
+            (
+                TemporalPredicate.AFTER,
+                (second.relation_id, first.relation_id),
+                True,
+            ),
+            (
+                TemporalPredicate.AFTER,
+                (first.relation_id, second.relation_id),
+                False,
+            ),
+            (
+                TemporalPredicate.BEFORE,
+                (second.relation_id, first.relation_id),
+                False,
+            ),
+        ):
+            question_id = stable_id(
+                "question",
+                {
+                    "object_ids": (),
+                    "predicate": predicate.value,
+                    "question_kind": QuestionKind.TEMPORAL.value,
+                    "reference_ids": references,
+                    "schema_version": SCHEMA_VERSION,
+                },
+            )
+            question = Question(
+                question_id=question_id,
+                episode_id=first.episode_id,
+                text=(f"Did {references[0]} happen {predicate.value} {references[1]}?"),
+                question_kind=QuestionKind.TEMPORAL,
+                predicate=predicate,
+                object_ids=(),
+                reference_ids=references,
+            )
+            cases[question_id] = (
+                question,
+                OracleAnswer(
+                    question_id=question_id,
+                    expected=expected,
+                    evidence_interval_ids=(first.interval_id, second.interval_id),
+                ),
+            )
+
+    return tuple(cases[question_id] for question_id in sorted(cases))
+
+
+def generate_temporal_questions(
+    intervals: Sequence[RelationInterval],
+) -> tuple[Question, ...]:
+    """Generate public questions for unambiguous strict interval orderings."""
+    return tuple(question for question, _ in generate_temporal_question_cases(intervals))
