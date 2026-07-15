@@ -55,7 +55,8 @@ class EvaluationBundle:
     answers: tuple[OracleAnswer, ...]
 
 
-def _write_jsonl(path: Path, records: Sequence[BaseModel]) -> BundleArtifact:
+def _write_jsonl(root: Path, relative_path: str, records: Sequence[BaseModel]) -> BundleArtifact:
+    path = _safe_path(root, relative_path)
     content = b"".join(f"{canonical_model_json(record)}\n".encode() for record in records)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(content)
@@ -66,13 +67,24 @@ def _write_jsonl(path: Path, records: Sequence[BaseModel]) -> BundleArtifact:
     )
 
 
+def _safe_path(root: Path, relative_path: str) -> Path:
+    path = root
+    if path.is_symlink():
+        raise ValueError(f"bundle path contains a symlink: {relative_path}")
+    for part in Path(relative_path).parts:
+        path /= part
+        if path.is_symlink():
+            raise ValueError(f"bundle path contains a symlink: {relative_path}")
+    return path
+
+
 def _read_jsonl(root: Path, artifact: BundleArtifact, model: type[RecordT]) -> tuple[RecordT, ...]:
-    path = root / artifact.path
+    path = _safe_path(root, artifact.path)
     return tuple(model.model_validate_json(line) for line in path.read_bytes().splitlines())
 
 
 def _verify_artifact(root: Path, artifact: BundleArtifact) -> None:
-    content = (root / artifact.path).read_bytes()
+    content = _safe_path(root, artifact.path).read_bytes()
     if sha256(content).hexdigest() != artifact.sha256:
         raise ValueError(f"artifact digest mismatch: {artifact.path}")
     record_count = len(content.splitlines())
@@ -171,7 +183,7 @@ def write_bundle(
             "source_video_sha256": source_video_sha256,
         },
     )
-    episode_path = root / "public" / "episode.json"
+    episode_path = _safe_path(root, "public/episode.json")
     episode_content = (
         canonical_json_bytes(
             {
@@ -196,10 +208,10 @@ def write_bundle(
             sha256=sha256(episode_content).hexdigest(),
             record_count=1,
         ),
-        questions=_write_jsonl(root / "public" / "questions.jsonl", questions),
+        questions=_write_jsonl(root, "public/questions.jsonl", questions),
     )
     public_manifest_bytes = f"{canonical_model_json(public_manifest)}\n".encode()
-    (root / "public" / "manifest.json").write_bytes(public_manifest_bytes)
+    _safe_path(root, "public/manifest.json").write_bytes(public_manifest_bytes)
 
     oracle_manifest = OracleBundleManifest(
         schema_version=SCHEMA_VERSION,
@@ -207,14 +219,14 @@ def write_bundle(
         episode_id=episode_id,
         source_video_sha256=source_video_sha256,
         public_manifest_sha256=sha256(public_manifest_bytes).hexdigest(),
-        observations=_write_jsonl(root / "oracle" / "observations.jsonl", observations),
-        relation_facts=_write_jsonl(root / "oracle" / "relation_facts.jsonl", relation_facts),
+        observations=_write_jsonl(root, "oracle/observations.jsonl", observations),
+        relation_facts=_write_jsonl(root, "oracle/relation_facts.jsonl", relation_facts),
         relation_intervals=_write_jsonl(
-            root / "oracle" / "relation_intervals.jsonl", relation_intervals
+            root, "oracle/relation_intervals.jsonl", relation_intervals
         ),
-        answers=_write_jsonl(root / "oracle" / "answers.jsonl", answers),
+        answers=_write_jsonl(root, "oracle/answers.jsonl", answers),
     )
-    (root / "oracle" / "manifest.json").write_text(
+    _safe_path(root, "oracle/manifest.json").write_text(
         f"{canonical_model_json(oracle_manifest)}\n",
         encoding="utf-8",
     )
@@ -222,13 +234,11 @@ def write_bundle(
 
 def load_bundle(root: Path) -> EvaluationBundle:
     """Load one public release together with its private oracle companion."""
-    public_manifest = PublicBundleManifest.model_validate_json(
-        (root / "public" / "manifest.json").read_bytes()
-    )
-    oracle_manifest = OracleBundleManifest.model_validate_json(
-        (root / "oracle" / "manifest.json").read_bytes()
-    )
-    public_manifest_bytes = (root / "public" / "manifest.json").read_bytes()
+    public_manifest_path = _safe_path(root, "public/manifest.json")
+    oracle_manifest_path = _safe_path(root, "oracle/manifest.json")
+    public_manifest = PublicBundleManifest.model_validate_json(public_manifest_path.read_bytes())
+    oracle_manifest = OracleBundleManifest.model_validate_json(oracle_manifest_path.read_bytes())
+    public_manifest_bytes = public_manifest_path.read_bytes()
     if sha256(public_manifest_bytes).hexdigest() != oracle_manifest.public_manifest_sha256:
         raise ValueError("oracle manifest does not match the public manifest digest")
     if (

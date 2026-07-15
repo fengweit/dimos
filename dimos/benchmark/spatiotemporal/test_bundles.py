@@ -161,6 +161,28 @@ def test_writes_and_loads_public_questions_without_private_teacher_data(tmp_path
     assert (tmp_path / "oracle" / "answers.jsonl").is_file()
 
 
+def test_bundle_output_is_byte_identical_across_roots(tmp_path: Path) -> None:
+    question, observation, fact, answer = _spatial_records()
+    roots = (tmp_path / "first", tmp_path / "second")
+    for root in roots:
+        write_bundle(
+            root,
+            episode_id="episode_1",
+            source_video_sha256="1" * 64,
+            questions=(question,),
+            observations=(observation,),
+            relation_facts=(fact,),
+            relation_intervals=(),
+            answers=(answer,),
+        )
+
+    outputs = [
+        {path.relative_to(root): path.read_bytes() for path in root.rglob("*") if path.is_file()}
+        for root in roots
+    ]
+    assert outputs[0] == outputs[1]
+
+
 def test_rejects_duplicate_public_question_references(tmp_path: Path) -> None:
     question, observation, fact, answer = _spatial_records()
 
@@ -306,6 +328,102 @@ def test_loader_rejects_artifacts_that_do_not_match_the_manifest(tmp_path: Path)
 
     with pytest.raises(ValueError, match="artifact digest"):
         load_bundle(tmp_path)
+
+
+def test_loader_rejects_traversal_artifact_paths(tmp_path: Path) -> None:
+    question, observation, fact, answer = _spatial_records()
+    write_bundle(
+        tmp_path,
+        episode_id="episode_1",
+        source_video_sha256="1" * 64,
+        questions=(question,),
+        observations=(observation,),
+        relation_facts=(fact,),
+        relation_intervals=(),
+        answers=(answer,),
+    )
+    public_path = tmp_path / "public" / "manifest.json"
+    public = PublicBundleManifest.model_validate_json(public_path.read_bytes())
+    public = public.model_copy(
+        update={"questions": public.questions.model_copy(update={"path": "../questions.jsonl"})}
+    )
+    public_bytes = f"{canonical_model_json(public)}\n".encode()
+    public_path.write_bytes(public_bytes)
+    oracle_path = tmp_path / "oracle" / "manifest.json"
+    oracle = OracleBundleManifest.model_validate_json(oracle_path.read_bytes()).model_copy(
+        update={"public_manifest_sha256": sha256(public_bytes).hexdigest()}
+    )
+    oracle_path.write_text(f"{canonical_model_json(oracle)}\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="relative canonical path"):
+        load_bundle(tmp_path)
+
+
+def test_loader_rejects_symlinked_artifacts(tmp_path: Path) -> None:
+    question, observation, fact, answer = _spatial_records()
+    bundle_root = tmp_path / "bundle"
+    write_bundle(
+        bundle_root,
+        episode_id="episode_1",
+        source_video_sha256="1" * 64,
+        questions=(question,),
+        observations=(observation,),
+        relation_facts=(fact,),
+        relation_intervals=(),
+        answers=(answer,),
+    )
+    questions_path = bundle_root / "public" / "questions.jsonl"
+    external_questions_path = tmp_path / "questions.jsonl"
+    questions_path.replace(external_questions_path)
+    questions_path.symlink_to(external_questions_path)
+
+    with pytest.raises(ValueError, match="symlink"):
+        load_bundle(bundle_root)
+
+
+def test_loader_rejects_symlinked_manifests(tmp_path: Path) -> None:
+    question, observation, fact, answer = _spatial_records()
+    bundle_root = tmp_path / "bundle"
+    write_bundle(
+        bundle_root,
+        episode_id="episode_1",
+        source_video_sha256="1" * 64,
+        questions=(question,),
+        observations=(observation,),
+        relation_facts=(fact,),
+        relation_intervals=(),
+        answers=(answer,),
+    )
+    manifest_path = bundle_root / "oracle" / "manifest.json"
+    external_manifest_path = tmp_path / "manifest.json"
+    manifest_path.replace(external_manifest_path)
+    manifest_path.symlink_to(external_manifest_path)
+
+    with pytest.raises(ValueError, match="symlink"):
+        load_bundle(bundle_root)
+
+
+def test_writer_rejects_symlinked_output_directories(tmp_path: Path) -> None:
+    question, observation, fact, answer = _spatial_records()
+    bundle_root = tmp_path / "bundle"
+    bundle_root.mkdir()
+    external_root = tmp_path / "external"
+    external_root.mkdir()
+    (bundle_root / "public").symlink_to(external_root, target_is_directory=True)
+
+    with pytest.raises(ValueError, match="symlink"):
+        write_bundle(
+            bundle_root,
+            episode_id="episode_1",
+            source_video_sha256="1" * 64,
+            questions=(question,),
+            observations=(observation,),
+            relation_facts=(fact,),
+            relation_intervals=(),
+            answers=(answer,),
+        )
+
+    assert not tuple(external_root.iterdir())
 
 
 def test_rejects_duplicate_interval_identities(tmp_path: Path) -> None:

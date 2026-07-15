@@ -1,8 +1,8 @@
 # Lane B — Dataset Progress
 
-AUTOMATION_STATUS: READY
-CURRENT_STEP: B4
-LAST_COMPLETED_STEP: B3
+AUTOMATION_STATUS: COMPLETE
+CURRENT_STEP: NONE
+LAST_COMPLETED_STEP: B4
 BRANCH: feat/stqa-dataset
 WORKTREE: /Users/tian/dimos-worktrees/stqa-dataset
 REMOTE: fork
@@ -12,7 +12,7 @@ REMOTE: fork
 | B1 | COMPLETE |
 | B2 | COMPLETE |
 | B3 | COMPLETE |
-| B4 | PENDING |
+| B4 | COMPLETE |
 
 ## Append-only entries
 
@@ -50,3 +50,14 @@ Each completed/blocker entry records exact changed files, harness output, review
 - Commit subject: `feat(benchmark): write replayable evaluation bundles`
 - Remote verification: post-push local/`fork/feat/stqa-dataset` equality gate (the creating commit cannot self-embed its own SHA); exact SHA recorded in worker execution output.
 - Next step: B4.
+
+### B4 — COMPLETE
+
+- Changed files: `dimos/benchmark/spatiotemporal/bundles.py`, `dimos/benchmark/spatiotemporal/test_bundles.py`, `.hermes/plans/spatiotemporal-video-qa-parallel/lanes/b/progress.md`
+- RED: `test_loader_rejects_symlinked_artifacts`, `test_loader_rejects_symlinked_manifests`, and `test_writer_rejects_symlinked_output_directories` each failed as expected because bundle loading/writing followed the tested symlink.
+- GREEN: `uv run pytest dimos/benchmark/spatiotemporal/test_bundles.py -v` — 15 passed.
+- Static checks: focused Ruff check/format, mypy, and `git diff --check` — passed.
+- Review: initial `REQUEST_CHANGES` for manifest and writer symlink escapes plus missing traversal/root-independence coverage; corrected all findings and the single allowed re-review returned `APPROVE`.
+- Commit subject: `test(benchmark): enforce bundle integrity and isolation`
+- Remote verification: post-push local/`fork/feat/stqa-dataset` equality gate (the creating commit cannot self-embed its own SHA); exact SHA recorded in worker execution output.
+- Next step: lane complete.
