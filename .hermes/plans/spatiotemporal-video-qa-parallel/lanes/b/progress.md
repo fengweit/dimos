@@ -1,8 +1,8 @@
 # Lane B — Dataset Progress
 
 AUTOMATION_STATUS: READY
-CURRENT_STEP: B3
-LAST_COMPLETED_STEP: B2
+CURRENT_STEP: B4
+LAST_COMPLETED_STEP: B3
 BRANCH: feat/stqa-dataset
 WORKTREE: /Users/tian/dimos-worktrees/stqa-dataset
 REMOTE: fork
@@ -11,7 +11,7 @@ REMOTE: fork
 |---|---|
 | B1 | COMPLETE |
 | B2 | COMPLETE |
-| B3 | PENDING |
+| B3 | COMPLETE |
 | B4 | PENDING |
 
 ## Append-only entries
@@ -39,3 +39,14 @@ Each completed/blocker entry records exact changed files, harness output, review
 - Commit subject: `feat(benchmark): generate balanced temporal questions`
 - Remote verification: post-push local/`fork/feat/stqa-dataset` equality gate (the creating commit cannot self-embed its own SHA); exact SHA recorded in worker execution output.
 - Next step: B3.
+
+### B3 — COMPLETE
+
+- Changed files: `dimos/benchmark/spatiotemporal/bundles.py`, `dimos/benchmark/spatiotemporal/test_bundles.py`, `.hermes/plans/spatiotemporal-video-qa-parallel/lanes/b/progress.md`
+- RED: the first bundle round-trip test failed at collection because `bundles.py` was missing; duplicate question/answer/interval identity, foreign question/relation/interval/episode reference, artifact-digest, and malformed episode-metadata regressions then failed for their expected missing validation behavior.
+- GREEN: `uv run pytest dimos/benchmark/spatiotemporal/test_bundles.py -v` — 10 passed.
+- Static checks: focused Ruff check/format and mypy — passed.
+- Review: initial `REQUEST_CHANGES` for foreign temporal and interval references, duplicate interval IDs, and unparsed episode metadata; corrected all findings and the single allowed re-review returned `APPROVE`.
+- Commit subject: `feat(benchmark): write replayable evaluation bundles`
+- Remote verification: post-push local/`fork/feat/stqa-dataset` equality gate (the creating commit cannot self-embed its own SHA); exact SHA recorded in worker execution output.
+- Next step: B4.
