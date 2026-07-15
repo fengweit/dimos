@@ -25,3 +25,13 @@ Each completed/blocker entry records exact changed files, harness output, review
 - Commit subject: `feat(benchmark): persist canonical teacher observations`.
 - Verified remote SHA: `SELF` — resolved by the post-push equality check between local `HEAD` and `fork/feat/stqa-replay`; the invocation reports the exact SHA.
 - Next step: D2.
+
+### D2 — BLOCKED_INTERFACE
+
+- Changed files: `.hermes/plans/spatiotemporal-video-qa-parallel/interface-change-requests/d-001.md`, `.hermes/plans/spatiotemporal-video-qa-parallel/lanes/d/progress.md`.
+- Blocker: the frozen interfaces define records but no callable observation-to-generation or bundle-writing APIs, replay insufficiency contract, or root-independent logical-hash semantics. Lane D did not duplicate or guess integration-owned APIs.
+- Harness: no RED/GREEN gate was run because the interface prerequisite is unavailable; the working tree passed the lane D ownership guard before the request was authored.
+- Review disposition: synchronous independent `hermes --yolo chat --quiet -q` review returned `VERDICT: APPROVE` with no must-fix issues.
+- Commit subject: `chore(benchmark): request replay bundle interface`.
+- Verified remote SHA: `SELF` — resolved by the post-push equality check between local `HEAD` and `fork/feat/stqa-replay`; the invocation reports the exact SHA.
+- Next step: D2 remains blocked pending resolution of `d-001.md`.
