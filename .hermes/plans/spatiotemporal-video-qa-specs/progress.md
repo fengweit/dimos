@@ -2,8 +2,8 @@
 
 AUTOMATION_STATUS: READY
 CURRENT_PHASE: 2
-CURRENT_STEP: 02a
-LAST_COMPLETED_STEP: 01d
+CURRENT_STEP: 02b
+LAST_COMPLETED_STEP: 02a
 
 > Append-only execution ledger. Every micro-spec or blocker commit must update this file with real evidence and be pushed to the remote feature branch.
 
@@ -33,7 +33,7 @@ Next: Step NNx | stopped
 | 01b | One left-of relation | COMPLETE |
 | 01c | One public question and private answer | COMPLETE |
 | 01d | Exact score and tracer | COMPLETE |
-| 02a | Inverse and vertical predicates | PENDING |
+| 02a | Inverse and vertical predicates | COMPLETE |
 | 02b | Ambiguity and metamorphic harness | PENDING |
 | 03a | Relation intervals and gaps | PENDING |
 | 03b | Strict before and after | PENDING |
@@ -171,3 +171,19 @@ Reviews:
 Blockers: none
 Remote: push this commit to `fork/feat/spatiotemporal-video-qa`, then verify exact SHA equality
 Next: Step 02a — Inverse and vertical predicates
+
+## Step 02a — Inverse and vertical predicates
+State: COMPLETE
+Commit subject: `feat(benchmark): add inverse and vertical relations`
+Changed files: `dimos/benchmark/spatiotemporal/models.py`, `dimos/benchmark/spatiotemporal/relations.py`, `dimos/benchmark/spatiotemporal/test_relations.py`, and this progress ledger.
+Delivered: All four strict image-plane predicates are replayable through one axis/argument-reusing relation oracle, with right-of and below implemented as inverse orderings.
+Harness evidence:
+- `uv run pytest dimos/benchmark/spatiotemporal/test_relations.py::test_right_of_is_left_of_with_arguments_swapped -v` → RED failed with the expected missing `derive_right_of`; GREEN passed: 1 passed in 0.01s.
+- `uv run pytest dimos/benchmark/spatiotemporal/test_relations.py::test_vertical_predicates_are_strict_inverses -v` → RED failed with the expected missing `derive_above`; GREEN passed: 1 passed in 0.02s.
+- `uv run pytest dimos/benchmark/spatiotemporal/test_relations.py -v` → focused harness passed: 5 passed in 0.01s; the command emitted the pre-existing uv/Python subprocess `ResourceWarning` recorded in the Phase 0 baseline.
+- `uv run ruff format --check dimos/benchmark/spatiotemporal/models.py dimos/benchmark/spatiotemporal/relations.py dimos/benchmark/spatiotemporal/test_relations.py && uv run ruff check dimos/benchmark/spatiotemporal/models.py dimos/benchmark/spatiotemporal/relations.py dimos/benchmark/spatiotemporal/test_relations.py && git diff --check` → 3 files already formatted; all checks passed; `git diff --check` produced no output.
+Reviews:
+- Focused review (`20260715_132725_c4c959`) → PASS with no blocking findings. Deferred its non-blocking suggestions for additional right-of epsilon assertions and vertical subject/object assertions because inverse direction, strict equality, and candidate orientation are already covered by the focused behavior; Step 02b owns the broader ambiguity/metamorphic harness.
+Blockers: none
+Remote: push this commit to `fork/feat/spatiotemporal-video-qa`, then verify exact SHA equality
+Next: Step 02b — Ambiguity and metamorphic harness

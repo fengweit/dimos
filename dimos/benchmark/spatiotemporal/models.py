@@ -45,6 +45,9 @@ class SpatialPredicate(StrEnum):
     """Supported image-plane predicates."""
 
     LEFT_OF = "left-of"
+    RIGHT_OF = "right-of"
+    ABOVE = "above"
+    BELOW = "below"
 
 
 class QuestionKind(StrEnum):

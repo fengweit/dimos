@@ -16,6 +16,7 @@
 
 from dataclasses import dataclass
 from math import isfinite
+from typing import Literal
 
 from dimos.benchmark.spatiotemporal.models import ObjectObservation, SpatialPredicate
 
@@ -30,12 +31,15 @@ class SpatialRelationCandidate:
     margin: float
 
 
-def derive_left_of(
+def _derive_ordered(
     subject: ObjectObservation,
     object_: ObjectObservation,
     margin: float,
+    predicate: SpatialPredicate,
+    axis: Literal["x", "y"],
+    *,
+    reverse: bool = False,
 ) -> SpatialRelationCandidate | None:
-    """Derive an accepted left-of candidate when evidence is sufficient."""
     if not isfinite(margin) or not 0.0 <= margin <= 1.0:
         raise ValueError("margin must be finite and within [0, 1]")
     subject_sample = (subject.episode_id, subject.frame_id, subject.timestamp_s)
@@ -44,11 +48,64 @@ def derive_left_of(
         raise ValueError("relations require observations from the same sample")
     if subject.object_id == object_.object_id:
         return None
-    if subject.box.x_max + margin < object_.box.x_min:
+    before, after = (object_, subject) if reverse else (subject, object_)
+    before_max = getattr(before.box, f"{axis}_max")
+    after_min = getattr(after.box, f"{axis}_min")
+    if before_max + margin < after_min:
         return SpatialRelationCandidate(
             subject=subject,
-            predicate=SpatialPredicate.LEFT_OF,
+            predicate=predicate,
             object=object_,
             margin=margin,
         )
     return None
+
+
+def derive_left_of(
+    subject: ObjectObservation,
+    object_: ObjectObservation,
+    margin: float,
+) -> SpatialRelationCandidate | None:
+    """Derive an accepted left-of candidate when evidence is sufficient."""
+    return _derive_ordered(subject, object_, margin, SpatialPredicate.LEFT_OF, "x")
+
+
+def derive_right_of(
+    subject: ObjectObservation,
+    object_: ObjectObservation,
+    margin: float,
+) -> SpatialRelationCandidate | None:
+    """Derive right-of by reusing left-of with swapped arguments."""
+    return _derive_ordered(
+        subject,
+        object_,
+        margin,
+        SpatialPredicate.RIGHT_OF,
+        "x",
+        reverse=True,
+    )
+
+
+def derive_above(
+    subject: ObjectObservation,
+    object_: ObjectObservation,
+    margin: float,
+) -> SpatialRelationCandidate | None:
+    """Derive an accepted above candidate when evidence is sufficient."""
+    return _derive_ordered(subject, object_, margin, SpatialPredicate.ABOVE, "y")
+
+
+def derive_below(
+    subject: ObjectObservation,
+    object_: ObjectObservation,
+    margin: float,
+) -> SpatialRelationCandidate | None:
+    """Derive below by reusing above with swapped arguments."""
+    return _derive_ordered(
+        subject,
+        object_,
+        margin,
+        SpatialPredicate.BELOW,
+        "y",
+        reverse=True,
+    )
