@@ -99,9 +99,7 @@ def test_read_observations_rejects_duplicate_json_field_names(tmp_path: Path) ->
 
 
 @pytest.mark.parametrize("mutation", ("whitespace", "crlf", "no-newline", "out-of-order"))
-def test_read_observations_rejects_noncanonical_jsonl(
-    tmp_path: Path, mutation: str
-) -> None:
+def test_read_observations_rejects_noncanonical_jsonl(tmp_path: Path, mutation: str) -> None:
     path = tmp_path / "observations.jsonl"
     write_observations(
         path,
@@ -122,9 +120,7 @@ def test_read_observations_rejects_noncanonical_jsonl(
 
 
 @pytest.mark.parametrize("invalid_field", ("timestamp", "box", "label"))
-def test_write_observations_revalidates_model_instances(
-    tmp_path: Path, invalid_field: str
-) -> None:
+def test_write_observations_revalidates_model_instances(tmp_path: Path, invalid_field: str) -> None:
     path = tmp_path / "observations.jsonl"
     observation = _observation("laptop_1", "laptop")
     invalid_observations = {
