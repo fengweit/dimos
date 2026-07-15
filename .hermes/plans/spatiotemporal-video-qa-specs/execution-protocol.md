@@ -6,6 +6,8 @@ The main agent owns all writes, RED/GREEN runs, git operations, interface decisi
 
 Never trust a subagent's success claim. Rerun every claimed check in the main worktree and inspect the resulting files or diff.
 
+For unattended one-shot phase workers, do not use asynchronous `delegate_task`. Run each required independent review in a separate foreground, read-only Hermes subprocess and consume its result before the main worker continues.
+
 ## Per-behavior TDD loop
 
 1. Add one focused behavioral test.
@@ -39,7 +41,7 @@ Do not write all tests first. Implement vertical slices one behavior at a time.
 
 ### Before Phase 1
 
-Run three read-only reviews in parallel:
+Run three independent read-only reviews. Interactive sessions may parallelize them; unattended one-shot workers run them as foreground subprocesses so every result is consumed:
 
 - Contract reviewer: strict schema, public/oracle split, stable IDs, over-design.
 - Geometry adversary: margins, equality, missing tracks, inverse relations.

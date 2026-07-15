@@ -21,12 +21,19 @@ Complete exactly one earliest incomplete phase per run. If that phase is already
 2. Inspect status and recent history before editing.
 3. If dirty files are unrelated to the current documented phase, stop without modifying them and record a blocker.
 4. Follow strict RED-GREEN-REFACTOR for every production behavior.
-5. Use the pre/post subagent reviews required by the phase and `execution-protocol.md`.
+5. Use the pre/post independent reviews required by the phase and `execution-protocol.md`.
 6. Run every harness required by that phase in the main worktree. Subagent claims are not evidence.
 7. Update `progress.md` with the phase result, exact commands/results, replayable artifact, review findings, and next phase.
 8. Commit only when the phase gate is green. Every commit must include `progress.md` plus the coherent phase source/tests/docs.
 9. Use the exact commit subject in the phase spec. Phase 0 uses `chore(benchmark): record spatiotemporal QA baseline`.
 10. Verify the commit and clean worktree before finishing.
+
+## Unattended review execution
+
+- Do not use `delegate_task`: it returns asynchronously, and this one-shot worker cannot consume results after it exits.
+- For each required independent review, invoke a separate foreground read-only Hermes subprocess with an explicit review prompt, for example `$HOME/.local/bin/hermes --yolo chat --quiet -q "<read-only review>"` from the repository root.
+- Run independent review subprocesses sequentially, capture their complete output, evaluate each finding yourself, and record accepted/rejected findings in `progress.md`.
+- Review subprocesses must not modify files, commit, or launch more agents. The main worker alone owns edits, harnesses, and commits.
 
 ## Failure and blocker policy
 

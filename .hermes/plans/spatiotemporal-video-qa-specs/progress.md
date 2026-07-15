@@ -39,4 +39,18 @@ Next: Phase N+1 — <name> | stopped
 
 ## Execution entries
 
-No phase has run yet.
+No phase has completed yet.
+
+## Automation recovery — unattended review handoff
+State: COMPLETE
+Commit subject: `fix(benchmark): keep phase reviews synchronous`
+Delivered: The detached phase worker now executes independent read-only reviews in foreground subprocesses instead of losing asynchronous delegation results when one-shot mode exits.
+Harness evidence:
+- `bash -n ~/.hermes/scripts/dimos_spatiotemporal_worker.sh` → passed before restart.
+- First worker → stopped cleanly on unattended command-approval timeout; no files changed.
+- Second worker → baseline tests and strict mypy passed, but exited after asynchronous review dispatch; no files changed.
+Reviews:
+- Automation behavior: root cause identified from two persisted worker logs.
+- Repository integrity: branch remained clean and Phase 0 remained READY.
+Blockers: none
+Next: Phase 0 — Foundation and frozen contracts
