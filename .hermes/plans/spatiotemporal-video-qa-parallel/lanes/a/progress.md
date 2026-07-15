@@ -1,15 +1,15 @@
 # Lane A — Semantics Progress
 
 AUTOMATION_STATUS: READY
-CURRENT_STEP: A1
-LAST_COMPLETED_STEP: NONE
+CURRENT_STEP: A2
+LAST_COMPLETED_STEP: A1
 BRANCH: feat/stqa-semantics
 WORKTREE: /Users/tian/dimos-worktrees/stqa-semantics
 REMOTE: fork
 
 | Step | State |
 |---|---|
-| A1 | PENDING |
+| A1 | COMPLETE |
 | A2 | PENDING |
 | A3 | PENDING |
 
